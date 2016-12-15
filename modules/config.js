@@ -1,26 +1,33 @@
 let configs = {};
 
-let jsonfile = require("jsonfile");
-let fs = require("fs");
+const jsonfile = require("jsonfile");
+const fs       = require("fs");
+const db       = require("./db");
 
-const getConfig = exports.getConfig = function (moduleName) {
+function getConfig(moduleName) {
   if (configs[moduleName]) {
     return configs[moduleName]
   } else {
     return {}
   }
-};
+}
 
-const saveConfig = exports.saveConfig = function (moduleName, config) {
+function saveConfig(moduleName, config) {
   configs[moduleName] = config;
   jsonfile.writeFileSync("config.json", configs);
-};
+}
 
-//INIT
-(() => {
+function init() {
   if (!fs.existsSync("config.json")) {
     jsonfile.writeFileSync("config.json", configs);
   } else {
     configs = jsonfile.readFileSync("config.json");
   }
-})();
+}
+
+init();
+
+module.exports = {
+  getConfig,
+  saveConfig
+};

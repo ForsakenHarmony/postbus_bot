@@ -4,12 +4,15 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ForsakenHarmony",
   "license": "ISC",
   "dependencies": {
     "jsonfile": "^2.3.1",
+    "nedb": "^1.8.0",
+    "nedb-promise": "^2.0.0",
     "node-schedule": "^1.1.1",
     "rest": "^2.0.0"
   }

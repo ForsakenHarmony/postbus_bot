@@ -112,11 +112,12 @@ function pad(n, width, z) {
   return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
-//INIT
-(() => {
+function init() {
   for (let id in reminders) {
     const reminder = reminders[id];
     reminder.id = id;
     addReminderInternal(reminder);
   }
-})();
+}
+
+init();

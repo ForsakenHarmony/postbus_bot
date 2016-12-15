@@ -2,7 +2,7 @@
 const config = require('./modules/config').getConfig('main');
 
 const telegram = require('./modules/telegram');
-const traps = require('./modules/traps');
+// const traps = require('./modules/traps');
 const reminder = require('./modules/reminder');
 
 let id = 0;
@@ -11,10 +11,10 @@ function tick() {
   telegram.getUpdates(id).then((response) => {
     for (let key in response.result) {
       const msg = response.result[key];
-      if (msg.message) {
+      if (msg.message && msg.message.text) {
         handleCommandsAndMessages(msg);
       }
-      id = response.result[key].update_id + 1;
+      id = msg.update_id + 1;
     }
   }).catch((e) => {
     console.error(e);
@@ -54,6 +54,5 @@ function handleCommandsAndMessages(msg) {
   }
   if (text.startsWith("/addmessage ")) {
     reminder.addMessage(text.substr(text.split(" ")[0].length), chatID);
-    return;
   }
 }
