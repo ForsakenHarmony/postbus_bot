@@ -4,16 +4,17 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node .",
+    "start": "node --harmony-async-await .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ForsakenHarmony",
   "license": "ISC",
   "dependencies": {
-    "jsonfile": "^2.3.1",
-    "nedb": "^1.8.0",
-    "nedb-promise": "^2.0.0",
-    "node-schedule": "^1.1.1",
-    "rest": "^2.0.0"
+    "debug": "^2.4.4",
+    "humanize-number": "^0.0.2",
+    "node-schedule": "^1.2.0",
+    "telegraf": "^3.6.6",
+    "telegraf-flow": "^8.1.2",
+    "telegraf-session-redis": "^4.2.0"
   }
 }

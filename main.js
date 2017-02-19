@@ -1,58 +1,37 @@
-//Load config before anything
-const config = require('./modules/config').getConfig('main');
+const debug = require('debug');
+debug.enable('*');
+const log = debug('main');
 
-const telegram = require('./modules/telegram');
-// const traps = require('./modules/traps');
+const Telegraf     = require('telegraf');
+const RedisSession = require('telegraf-session-redis');
+const TelegrafFlow = require('telegraf-flow');
+
+const logger   = require('./modules/logger');
 const reminder = require('./modules/reminder');
 
-let id = 0;
+const app = new Telegraf(process.env.BOT_TOKEN);
 
-function tick() {
-  telegram.getUpdates(id).then((response) => {
-    for (let key in response.result) {
-      const msg = response.result[key];
-      if (msg.message && msg.message.text) {
-        handleCommandsAndMessages(msg);
-      }
-      id = msg.update_id + 1;
-    }
-  }).catch((e) => {
-    console.error(e);
-  });
+app.telegram.getMe().then((botInfo) => {
+  app.options.username = botInfo.username
+});
 
-  setTimeout(tick, 2000)
-}
-tick();
+const session = new RedisSession({
+  store: {
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: process.env.REDIS_PORT || 6379
+  },
+  ttl  : 60 * 60 * 60,
+});
+const flow    = new TelegrafFlow();
 
-function handleCommandsAndMessages(msg) {
-  const text = msg.message.text.replace("@trapsrnd_bot", "");
-  const chatID = msg.message.chat.id;
+app.use(logger());
 
-  if (text.startsWith("/traps")) {
-    telegram.sendMessage(chatID, "Nothing to see here, go along");
-    return;
-  }
-  if (text.startsWith("/reminder")) {
-    reminder.setReminder(text.split(" ")[1], chatID);
-    return;
-  }
-  if (text.startsWith("/listmessages")) {
-    reminder.listMessages(chatID);
-    return;
-  }
-  if (text.startsWith("/list")) {
-    reminder.listReminders(chatID);
-    return;
-  }
-  if (text.startsWith("/cancel")) {
-    if (text.startsWith("/cancel_")) {
-      reminder.cancelReminder(text.split("_")[1], chatID)
-    } else {
-      reminder.cancelReminder(text.split(" ")[1], chatID)
-    }
-    return;
-  }
-  if (text.startsWith("/addmessage ")) {
-    reminder.addMessage(text.substr(text.split(" ")[0].length), chatID);
-  }
-}
+reminder.init(flow, session.client, app.telegram);
+
+app.command('listmessages', reminder.listMessages);
+
+app.use(session.middleware());
+app.use(flow.middleware());
+
+
+app.startPolling();
