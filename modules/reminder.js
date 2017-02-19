@@ -250,5 +250,6 @@ const deleteMessage = exports.deleteMessage = async (id) => {
 // TODO: ability to delete messages (permission? also for adding)
 exports.listMessages = (ctx) => {
   debug('test');
+  if(Object.values(messages).length === 0) return ctx.reply('No messages, add one!');
   return ctx.reply(Object.values(messages).join('\n'));
 };
