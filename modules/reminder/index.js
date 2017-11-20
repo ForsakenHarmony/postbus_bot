@@ -1,5 +1,5 @@
 const debug = require('debug')('modules:reminder');
-const schedule = require('node-schedule');
+const cron = require('cron');
 const Stage = require('telegraf/stage');
 
 const reminderScene = require('./reminder_scene');
@@ -10,6 +10,28 @@ const { randomInt } = require('../util');
 
 module.exports = ({ bot, db }) => {
   const jobs = {};
+
+  function scheduleReminder (id, reminder) {
+    const { hour, minute } = reminder.time;
+    const job = new cron.CronJob({
+      cronTime: `00 ${minute} ${hour} * * *`,
+      onTick: () => {
+        remind(reminder);
+      },
+      timeZone: process.env.TZ || 'Europe/Dublin'
+    });
+    job.start();
+    jobs[id] = job;
+  }
+
+  function cancelReminder(id) {
+    const job = jobs[id];
+    if(!job) {
+      throw new Error('Reminder doesn\'t exist');
+    }
+    job.stop();
+    delete jobs[id];
+  }
 
   async function remind (reminder) {
     const messages = await db.find({ type: 'message' });
@@ -35,18 +57,11 @@ module.exports = ({ bot, db }) => {
     scheduleReminder(id, reminder);
   }
 
-  function scheduleReminder (id, reminder) {
-    jobs[id] = schedule.scheduleJob(reminder.time, () => {
-      remind(reminder);
-    });
-  }
-
   const deleteReminder = async id => {
-    if (!id || !jobs[id]) {
-      throw new Error('Reminder doesn\'t exist');
+    if (!id) {
+      throw new Error('You have to specify the id');
     }
-    jobs[id].cancel();
-    delete jobs[id];
+    cancelReminder(id);
     await db.delete(id);
   };
 
@@ -59,7 +74,7 @@ module.exports = ({ bot, db }) => {
 
   const deleteMessage = async id => {
     if (!id) {
-      throw new Error('Message doesn\'t exist');
+      throw new Error('You have to specify the id');
     }
     await db.delete(id);
   };
