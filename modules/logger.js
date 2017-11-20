@@ -1,4 +1,4 @@
-const debug = require('debug')('modules:logger');
+const debug    = require('debug')('modules:logger');
 const humanize = require('humanize-number');
 
 module.exports = dev;
