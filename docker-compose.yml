@@ -1,0 +1,27 @@
+version: '3.1'
+
+services:
+  bot:
+    build: ./
+    image: harmony/trapsbot
+    networks:
+      - trapnet
+    depends_on:
+      - db
+    environment:
+      DB_HOST: 'db'
+      BOT_TOKEN: ''
+  db:
+    image: couchdb:2.1.1
+    networks:
+      - trapnet
+    environment:
+      COUCHDB_USER: 'admin'
+      COUCHDB_PASSWORD: 'admin'
+    volumes:
+      - /data/couchdb:/opt/couchdb/data
+
+networks:
+  trapnet:
+    driver: bridge
+    internal: false
