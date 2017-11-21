@@ -62,7 +62,7 @@ module.exports = ({ bot, db }) => {
   });
 
   async function remind (chat) {
-    const messages = await db.find({ type: 'message' });
+    const messages = await db.find({ type: 'message', approved: true });
     const message = messages[randomInt(0, messages.length - 1)].text || 'Reminder! - Consider adding a message';
     bot.telegram.sendMessage(chat, message, remindAgainKB);
     debug('reminded %s', chat);
@@ -96,7 +96,8 @@ module.exports = ({ bot, db }) => {
   const addMessage = async message => {
     await db.insert({
       type: 'message',
-      text: message
+      text: message,
+      approved: false
     });
   };
 
@@ -109,7 +110,7 @@ module.exports = ({ bot, db }) => {
 
   // TODO: ability to delete messages (permission? also for adding)
   const listMessages = async ctx => {
-    const messages = await db.find({ type: 'message' });
+    const messages = await db.find({ type: 'message', approved: true });
     if (messages.length === 0) {
       return ctx.reply('No messages, add one!');
     }
