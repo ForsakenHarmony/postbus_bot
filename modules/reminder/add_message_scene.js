@@ -6,13 +6,13 @@ module.exports = ({ addMessage }) => {
   const addMessageScene = new Scene('addMessage');
 
   addMessageScene.enter(async ctx => {
-    const msg = await ctx.reply(
+    const {chat: {id: chatId}, message_id: msgId} = await ctx.reply(
       'Reply with a message to add',
       realReply(ctx, cancelKeyboard)
     );
     ctx.scene.state.msg = {
-      chat_id: msg.chat.id,
-      msg_id: msg.message_id,
+      chat_id: chatId,
+      msg_id: msgId,
       user: ctx.from.id
     };
   });

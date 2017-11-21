@@ -1,5 +1,6 @@
 const debug = require('debug')('modules:reminder');
 const cron = require('cron');
+const { Markup } = require('telegraf');
 const Stage = require('telegraf/stage');
 
 const reminderScene = require('./reminder_scene');
@@ -10,13 +11,14 @@ const { randomInt } = require('../util');
 
 module.exports = ({ bot, db }) => {
   const jobs = {};
+  const tempJobs = {};
 
   function scheduleReminder (id, reminder) {
     const { hour, minute } = reminder.time;
     const job = new cron.CronJob({
       cronTime: `00 ${minute} ${hour} * * *`,
       onTick: () => {
-        remind(reminder);
+        remind(reminder.chat);
       },
       timeZone: process.env.TZ || 'Europe/Dublin'
     });
@@ -24,20 +26,46 @@ module.exports = ({ bot, db }) => {
     jobs[id] = job;
   }
 
-  function cancelReminder(id) {
+  function cancelReminder (id) {
     const job = jobs[id];
-    if(!job) {
+    if (!job) {
       throw new Error('Reminder doesn\'t exist');
     }
     job.stop();
     delete jobs[id];
   }
 
-  async function remind (reminder) {
+  const remindAgainKB = Markup.inlineKeyboard([
+    Markup.callbackButton('30m', '30m'),
+    Markup.callbackButton('1hr', '1hr')
+  ]).selective().extra();
+
+  bot.on('callback_query', async (ctx, next) => {
+    const query = ctx.callbackQuery;
+    if (query.data === '30m' || query.data === '1hr') {
+      const chatId = query.message.chat.id;
+      if (tempJobs[chatId]) {
+        clearTimeout(tempJobs[chatId])
+      }
+      tempJobs[chatId] = setTimeout(
+        () => {
+          remind(query.message.chat.id);
+          delete tempJobs[chatId];
+        },
+        ('30m' ? 30 : 60) * 60 * 1000
+      );
+
+      await ctx.editMessageText(query.message.text, Markup.removeKeyboard());
+      return await ctx.answerCbQuery('Will remind again in ' + query.data);
+    }
+    return next();
+  });
+
+  async function remind (chat) {
     const messages = await db.find({ type: 'message' });
     const message = messages[randomInt(0, messages.length - 1)].text || 'Reminder! - Consider adding a message';
-    bot.telegram.sendMessage(reminder.chat, message);
-    debug('reminded %s %s', reminder.chat, reminder.time);
+    bot.telegram.sendMessage(chat, message, remindAgainKB);
+    debug('reminded %s', chat);
   }
 
   async function addReminder ({ chat, time }) {

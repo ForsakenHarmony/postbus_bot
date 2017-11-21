@@ -8,6 +8,7 @@ module.exports = ({ deleteReminder, getReminders }) => {
     String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
 
   const msgFromReminders = reminders =>
+    'Your Reminders:\n' +
     reminders.map(reminder => getTimeString(reminder.time)).join('\n');
 
   const keyboard = reminders => {

@@ -1,19 +1,19 @@
 const Scene = require('telegraf/scenes/base');
+const { Markup } = require('telegraf');
 
 const { cancelKeyboard, exitOnCancel, realReply } = require('./util');
-const { symbolTimes } = require('../util');
 
 module.exports = ({ addReminder }) => {
   const reminderScene = new Scene('reminder');
 
   reminderScene.enter(async ctx => {
-    const msg = await ctx.reply(
+    const {chat: {id: chatId}, message_id: msgId} = await ctx.reply(
       'Reply with time (H)H:MM',
       realReply(ctx, cancelKeyboard)
     );
     ctx.scene.state.msg = {
-      chat_id: msg.chat.id,
-      msg_id: msg.message_id,
+      chat_id: chatId,
+      msg_id: msgId,
       user: ctx.from.id
     };
   });
@@ -28,7 +28,7 @@ module.exports = ({ addReminder }) => {
         msg.chat_id,
         msg.msg_id,
         null,
-        `Reply with time (H)H:MM\nWrong syntax ${symbolTimes('!', count)}`,
+        `Reply with time (H)H:MM\nWrong syntax ${'!'.padEnd(count, '!')}`,
         cancelKeyboard
       );
     }
