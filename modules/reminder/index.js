@@ -52,7 +52,7 @@ module.exports = ({ bot, db }) => {
           remind(query.message.chat.id);
           delete tempJobs[chatId];
         },
-        ('30m' ? 30 : 60) * 60 * 1000
+        (query.data === '30m' ? 30 : 60) * 60 * 1000
       );
 
       await ctx.editMessageText(query.message.text, Markup.removeKeyboard());
