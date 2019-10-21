@@ -12,5 +12,5 @@ A telegram bot for daily reminders
 
 ## Docker
 
-1. `docker build -t yourname/trapsbot .`
-2. `docker run -d -e BOT_TOKEN=yourtoken -e REDIS_HOST=redishost -e REDIS_PORT=redisport yourname/trapsbot`
+1. `docker build -t yourname/postbus_bot .`
+2. `docker run -d -e BOT_TOKEN=yourtoken -e REDIS_HOST=redishost -e REDIS_PORT=redisport yourname/postbus_bot`
