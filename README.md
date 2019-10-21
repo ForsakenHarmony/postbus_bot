@@ -1,4 +1,4 @@
-# TRAPSBOT
+# POSTBUS_BOT
 
 A telegram bot for daily reminders
 
